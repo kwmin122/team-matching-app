@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/team-matching-app/static/css/main.21fd3234.css",
+    "main.js": "/team-matching-app/static/js/main.bb367832.js",
+    "static/js/453.5490e267.chunk.js": "/team-matching-app/static/js/453.5490e267.chunk.js",
+    "index.html": "/team-matching-app/index.html",
+    "main.21fd3234.css.map": "/team-matching-app/static/css/main.21fd3234.css.map",
+    "main.bb367832.js.map": "/team-matching-app/static/js/main.bb367832.js.map",
+    "453.5490e267.chunk.js.map": "/team-matching-app/static/js/453.5490e267.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.21fd3234.css",
+    "static/js/main.bb367832.js"
+  ]
+}
