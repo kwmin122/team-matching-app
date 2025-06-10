@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>소개팅 마이페이지</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    /* 기존 CSS 그대로 유지 (생략 가능) */
+    body { margin: 0; background-color: #fff8f3; font-family: 'Noto Sans KR', sans-serif; }
+    nav { display: flex; justify-content: space-between; align-items: center; background-color: #fff2ea; padding: 15px 30px; box-shadow: 0 2px 6px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 999; }
+    .nav-left { font-size: 24px; font-weight: bold; color: #d66b42; }
+    .nav-center { display: flex; gap: 15px; justify-content: center; flex-grow: 1; }
+    .nav-center button, .nav-right button { background-color: #f8a88d; color: white; padding: 8px 14px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+    .nav-center button:hover, .nav-right button:hover { background-color: #f58c73; }
+    .wrapper { display: flex; padding: 40px; }
+    .profile-box { width: 250px; background: #fff2ea; padding: 20px; border-radius: 15px; box-shadow: 0 6px 15px rgba(0,0,0,0.05); margin-right: 40px; height: fit-content; }
+    .profile-box img { width: 100%; border-radius: 15px; object-fit: cover; margin-bottom: 15px; }
+    .field { margin: 10px 0; }
+    .label { font-weight: bold; display: inline-block; width: 80px; }
+    input[type="text"], input[type="file"] { width: 90%; padding: 6px; margin-top: 6px; border-radius: 6px; border: 1px solid #ccc; }
+    .status { margin-top: 20px; background: #ffffff; padding: 15px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.03); font-size: 14px; }
+    #editBtn, #saveBtn { margin-top: 15px; padding: 8px 16px; background-color: #f8a88d; color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .main-image { flex-grow: 1; display: flex; justify-content: center; align-items: center; }
+    .main-image img { max-width: 600px; width: 100%; border-radius: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+  </style>
+</head>
+<body>
+
+  <!-- 네비게이션 -->
+  <nav>
+    <div class="nav-left">소개팅</div>
+    <div class="nav-center">
+      <button onclick="location.href='profile.html'">마이페이지</button>
+      <button onclick="location.href='match.html'">매칭</button>
+      <button onclick="location.href='chat.html'">채팅</button>
+      <button onclick="location.href='report.html'">신고</button>
+    </div>
+    <div class="nav-right">
+      <button onclick="logout()">로그아웃</button>
+    </div>
+  </nav>
+
+  <!-- 콘텐츠 -->
+  <div class="wrapper">
+    <!-- 왼쪽 프로필 -->
+    <div class="profile-box">
+      <img id="profileImg" src="profile.jpg" alt="프로필 사진">
+      <input type="file" id="photoInput" accept="image/*" onchange="previewImage(event)">
+
+      <div class="field"><span class="label">이름:</span> <span id="name">-</span></div>
+      <div class="field"><span class="label">학교:</span> <span id="school">-</span></div>
+      <div class="field"><span class="label">학과:</span> <span id="major">-</span></div>
+      <div class="field"><span class="label">학번:</span> <span id="studentId">-</span></div>
+      <div class="field"><span class="label">나이:</span> <span id="age">-</span></div>
+
+      <button id="editBtn" onclick="editInfo()">정보 수정</button>
+      <button id="saveBtn" onclick="saveInfo()" style="display:none;">저장</button>
+
+      <div class="status">
+        <h4>📋 소개팅 신청 현황</h4>
+        <p>받은 신청: 0건</p>
+        <p>보낸 신청: 0건</p>
+      </div>
+    </div>
+
+    <!-- 가운데 이미지 -->
+    <div class="main-image">
+      <img src="https://via.placeholder.com/600x350.png?text=소개팅+이미지" alt="메인 이미지">
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    window.onload = function () {
+      const userData = localStorage.getItem('loggedInUser');
+      if (!userData) {
+        alert('로그인이 필요합니다.');
+        location.href = 'login.html';
+        return;
+      }
+
+      currentUser = JSON.parse(userData);
+
+      document.getElementById('name').textContent = currentUser.name;
+      document.getElementById('school').textContent = currentUser.school;
+      document.getElementById('major').textContent = currentUser.major;
+      document.getElementById('studentId').textContent = currentUser.id; // 아이디 = 학번으로 간주
+      document.getElementById('age').textContent = currentUser.age;
+
+      // 프로필 이미지 저장돼 있으면 불러오기
+      const savedImg = localStorage.getItem('profileImage_' + currentUser.id);
+      if (savedImg) document.getElementById('profileImg').src = savedImg;
+    };
+
+    function editInfo() {
+      const fields = ["name", "school", "major", "studentId", "age"];
+      fields.forEach(id => {
+        const span = document.getElementById(id);
+        const value = span.textContent;
+        span.innerHTML = `<input type="text" id="${id}-input" value="${value}">`;
+      });
+      document.getElementById("editBtn").style.display = "none";
+      document.getElementById("saveBtn").style.display = "inline-block";
+    }
+
+    function saveInfo() {
+      const fields = ["name", "school", "major", "studentId", "age"];
+      fields.forEach(id => {
+        const input = document.getElementById(`${id}-input`);
+        const newValue = input.value;
+        document.getElementById(id).textContent = newValue;
+        currentUser[id === 'studentId' ? 'id' : id] = newValue;
+      });
+
+      localStorage.setItem("loggedInUser", JSON.stringify(currentUser));
+      localStorage.setItem("user_" + currentUser.id, JSON.stringify(currentUser));
+
+      document.getElementById("editBtn").style.display = "inline-block";
+      document.getElementById("saveBtn").style.display = "none";
+    }
+
+    function previewImage(event) {
+      const input = event.target;
+      const reader = new FileReader();
+
+      reader.onload = function () {
+        const img = document.getElementById("profileImg");
+        img.src = reader.result;
+        localStorage.setItem('profileImage_' + currentUser.id, reader.result);
+      };
+
+      if (input.files && input.files[0]) {
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      location.href = "index.html";
+    }
+  </script>
+
+</body>
+</html>

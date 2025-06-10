@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap');
+
+body {
+  font-family: 'Noto Sans KR', sans-serif;
+  margin: 0;
+  background-color: #fff8f3;
+  color: #222;
+}
+nav {
+  display: flex;
+  align-items: center;
+  background-color: #fff2ea;
+  padding: 15px 30px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 999;
+}
+
+.nav-left {
+  font-size: 24px;
+  font-weight: bold;
+  color: #d66b42;
+  margin-right: 20px;
+}
+
+.nav-center {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-grow: 1; /* ✅ 중앙에 균형 맞추기 위해 추가 */
+}
+
+.nav-right {
+  margin-left: auto; /* ✅ 오른쪽으로 밀기 */
+}
+
+.nav-center button,
+.nav-right button {
+  background-color: #f8a88d;
+  color: white;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.nav-center button:hover,
+.nav-right button:hover {
+  background-color: #f58c73;
+}
+
+.main-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 40px;
+  gap: 40px;
+}
+
+.profile-box {
+  background: #ffe2d1;
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  width: 250px;
+}
+
+.main-image {
+  width: 600px;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}

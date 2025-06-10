@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>매칭 신청</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .hidden { display: none; }
+    .container { max-width: 500px; margin:  0 auto; }
+    .form-group { margin-bottom: 10px; }
+    label { display: block; margin-bottom: 5px; }
+    input, select, button, textarea { width: 100%; padding: 8px; margin-top: 4px; }
+    .profile-card { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    .slider-buttons { display: flex; justify-content: space-between; margin-top: 10px; }
+    #alert-box {
+      background-color: #ffef96;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #f0c000;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <div class="container">
+
+    <div id="alert-box" class="hidden">🔔 새로운 매칭 요청이 도착했습니다!</div>
+
+    <div id="start-screen">
+      <h2>신청</h2>
+      <button onclick="showTypeSelection()">신청하기</button>
+    </div>
+
+    <div id="type-selection" class="hidden">
+      <h3>신청 유형 선택</h3>
+      <button onclick="selectType('개인')">개인</button>
+      <button onclick="selectType('단체')">단체</button>
+    </div>
+
+    <div id="form-container" class="hidden">
+      <h3>신청자 정보 입력</h3>
+      <form id="user-form">
+        <div class="form-group">
+          <label for="name">이름</label>
+          <input type="text" id="name" required />
+        </div>
+        <div class="form-group">
+          <label for="major">학과</label>
+          <input type="text" id="major" required />
+        </div>
+        <div class="form-group">
+          <label for="gender">성별</label>
+          <select id="gender" required>
+            <option value="">선택하세요</option>
+            <option value="남">남</option>
+            <option value="여">여</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="ideal">이상형</label>
+          <input type="text" id="ideal" required />
+        </div>
+        <div class="form-group">
+          <label for="intro">한줄 소개</label>
+          <input type="text" id="intro" required />
+        </div>
+
+        <div id="group-members-section" class="hidden">
+          <h4>단체 구성원 최대 3명</h4>
+          <div class="form-group" id="group-member-forms"></div>
+        </div>
+
+        <button type="button" onclick="submitProfile()">프로필 작성 완료</button>
+      </form>
+    </div>
+
+    <div id="matching-screen" class="hidden">
+      <h3>랜덤 매칭</h3>
+      <div id="random-profile" class="profile-card"></div>
+      <div class="slider-buttons">
+        <button onclick="prevProfile()">이전</button>
+        <button onclick="nextProfile()">다음</button>
+      </div>
+    </div>
+
+    <div id="notification-screen" class="hidden">
+      <h3>매칭 요청 받음</h3>
+      <div id="received-profile" class="profile-card"></div>
+      <div class="slider-buttons">
+        <button onclick="acceptMatch()">수락</button>
+        <button onclick="declineMatch()">거절</button>
+      </div>
+    </div>
+
+    <div id="status-screen" class="hidden">
+      <h3>매칭 상태</h3>
+      <p id="status-message"></p>
+    </div>
+  </div>
+
+  <script>
+  const socket = io("http://localhost:3000");
+  const userProfile = {};
+  let allProfiles = [];
+  let currentProfileIndex = 0;
+  let selectedProfile = null;
+  let currentMatchFromId = null;
+
+  function showTypeSelection() {
+    document.getElementById("start-screen").classList.add("hidden");
+    document.getElementById("type-selection").classList.remove("hidden");
+  }
+
+  function selectType(type) {
+    userProfile.isGroup = type === '단체';
+    document.getElementById("type-selection").classList.add("hidden");
+    document.getElementById("form-container").classList.remove("hidden");
+    const groupSection = document.getElementById("group-members-section");
+    const groupForm = document.getElementById("group-member-forms");
+    groupForm.innerHTML = "";
+    if (userProfile.isGroup) {
+      groupSection.classList.remove("hidden");
+      for (let i = 0; i < 3; i++) {
+        groupForm.innerHTML += `
+          <div class="form-group">
+            <label>구성원 ${i + 1} 이름</label>
+            <input type="text" id="member-name-${i}" />
+            <label>학과</label>
+            <input type="text" id="member-major-${i}" />
+            <label>이상형</label>
+            <input type="text" id="member-ideal-${i}" />
+            <label>소개</label>
+            <input type="text" id="member-intro-${i}" />
+          </div>
+        `;
+      }
+    } else {
+      groupSection.classList.add("hidden");
+    }
+  }
+
+  function submitProfile() {
+    userProfile.name = document.getElementById("name").value;
+    userProfile.major = document.getElementById("major").value;
+    userProfile.gender = document.getElementById("gender").value;
+    userProfile.ideal = document.getElementById("ideal").value;
+    userProfile.intro = document.getElementById("intro").value;
+
+    if (userProfile.isGroup) {
+      userProfile.groupMembers = [];
+      for (let i = 0; i < 3; i++) {
+        const name = document.getElementById(`member-name-${i}`).value;
+        const major = document.getElementById(`member-major-${i}`).value;
+        const ideal = document.getElementById(`member-ideal-${i}`).value;
+        const intro = document.getElementById(`member-intro-${i}`).value;
+        if (name) {
+          userProfile.groupMembers.push({ name, major, ideal, intro });
+        }
+      }
+    }
+
+    socket.emit("register", userProfile);
+
+    document.getElementById("form-container").classList.add("hidden");
+    document.getElementById("matching-screen").classList.remove("hidden");
+  }
+
+  socket.on("update_profiles", (profiles) => {
+    allProfiles = profiles;
+    currentProfileIndex = 0;
+    showRandomProfile();
+  });
+
+  function showRandomProfile() {
+    const profile = allProfiles[currentProfileIndex];
+    if (!profile) {
+      document.getElementById("random-profile").innerHTML = "표시할 프로필이 없습니다.";
+      return;
+    }
+
+    const profileDiv = document.getElementById("random-profile");
+    let groupInfo = "";
+    if (profile.isGroup && Array.isArray(profile.groupMembers)) {
+      groupInfo = profile.groupMembers.map((member, i) => `
+        <div style="margin-top: 10px; padding-left: 10px;">
+          <strong>구성원 ${i + 1}</strong><br />
+          이름: ${member.name}<br />
+          학과: ${member.major}<br />
+          이상형: ${member.ideal}<br />
+          소개: ${member.intro}
+        </div>
+      `).join("");
+    }
+
+    profileDiv.innerHTML = `
+      <p><strong>이름:</strong> ${profile.name}</p>
+      <p><strong>학과:</strong> ${profile.major}</p>
+      <p><strong>성별:</strong> ${profile.gender}</p>
+      <p><strong>이상형:</strong> ${profile.ideal}</p>
+      <p><strong>소개:</strong> ${profile.intro}</p>
+      ${groupInfo}
+      <button onclick="sendMatchRequest('${profile.socketId}')">매칭 보내기</button>
+    `;
+  }
+
+  function nextProfile() {
+    currentProfileIndex = (currentProfileIndex + 1) % allProfiles.length;
+    showRandomProfile();
+  }
+
+  function prevProfile() {
+    currentProfileIndex = (currentProfileIndex - 1 + allProfiles.length) % allProfiles.length;
+    showRandomProfile();
+  }
+
+  function sendMatchRequest(targetSocketId) {
+    selectedProfile = allProfiles[currentProfileIndex];
+    socket.emit("send_match", targetSocketId);
+    document.getElementById("matching-screen").classList.add("hidden");
+    document.getElementById("status-screen").classList.remove("hidden");
+    document.getElementById("status-message").innerText = `매칭 요청을 보냈습니다. 대기 중...`;
+  }
+
+  socket.on("receive_match", ({ from, fromId }) => {
+    currentMatchFromId = fromId;
+    const profileDiv = document.getElementById("received-profile");
+    let groupInfo = "";
+
+    if (from.isGroup && Array.isArray(from.groupMembers)) {
+      groupInfo = from.groupMembers.map((member, i) => `
+        <div style="margin-top: 10px; padding-left: 10px;">
+          <strong>구성원 ${i + 1}</strong><br />
+          이름: ${member.name}<br />
+          학과: ${member.major}<br />
+          이상형: ${member.ideal}<br />
+          소개: ${member.intro}
+        </div>
+      `).join("");
+    }
+
+    profileDiv.innerHTML = `
+      <p><strong>이름:</strong> ${from.name}</p>
+      <p><strong>학과:</strong> ${from.major}</p>
+      <p><strong>성별:</strong> ${from.gender}</p>
+      <p><strong>이상형:</strong> ${from.ideal}</p>
+      <p><strong>소개:</strong> ${from.intro}</p>
+      ${groupInfo}
+    `;
+
+    document.getElementById("notification-screen").classList.remove("hidden");
+    document.getElementById("status-screen").classList.add("hidden");
+  });
+
+  function acceptMatch() {
+    if (currentMatchFromId) {
+      socket.emit("accept_match", currentMatchFromId);
+      document.getElementById("notification-screen").classList.add("hidden");
+      document.getElementById("status-screen").classList.remove("hidden");
+      document.getElementById("status-message").innerHTML = `
+        매칭을 수락했습니다.<br/>
+        <button onclick="startChat()">채팅을 시작하시겠습니까?</button>
+      `;
+    }
+  }
+
+  function declineMatch() {
+    if (currentMatchFromId) {
+      socket.emit("decline_match", currentMatchFromId);
+      document.getElementById("notification-screen").classList.add("hidden");
+      document.getElementById("status-screen").classList.remove("hidden");
+      document.getElementById("status-message").innerText = "매칭을 거절했습니다.";
+    }
+  }
+
+  socket.on("match_result", ({ status, fromId }) => {
+    if (status === "수락") {
+      document.getElementById("status-screen").classList.remove("hidden");
+      document.getElementById("status-message").innerHTML = `
+        상대방이 매칭을 수락했습니다.<br/>
+        <button onclick="startChat()">채팅을 시작하시겠습니까?</button>
+      `;
+    } else if (status === "거절") {
+      document.getElementById("status-screen").classList.remove("hidden");
+      document.getElementById("status-message").innerHTML = `
+        상대방이 매칭을 거절했습니다.<br/>
+        <button onclick="restartMatching()">다른 인연 찾아보기</button>
+      `;
+    }
+  });
+
+  function startChat() {
+    alert("채팅 페이지로 이동합니다.");
+    // 여기에 실제 채팅 페이지로 이동하는 로직을 연결할 수 있음
+    // 예: window.location.href = "/chat.html";
+  }
+
+  function restartMatching() {
+    document.getElementById("status-screen").classList.add("hidden");
+    document.getElementById("matching-screen").classList.remove("hidden");
+    showRandomProfile();
+  }
+</script>

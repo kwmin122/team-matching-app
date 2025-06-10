@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>소개팅 - 로그인 / 회원가입</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      background-color: #fff8f3;
+      font-family: 'Noto Sans KR', sans-serif;
+      text-align: center;
+    }
+
+    nav {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff2ea;
+      padding: 15px 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .nav-left {
+      font-size: 24px;
+      font-weight: bold;
+      color: #d66b42;
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-grow: 1;
+    }
+
+    .nav-center button,
+    .nav-right button {
+      background-color: #f8a88d;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .nav-center button:hover,
+    .nav-right button:hover {
+      background-color: #f58c73;
+    }
+
+    .form-box {
+      margin: 80px auto;
+      display: inline-block;
+      padding: 30px;
+      border: 1px solid #aaa;
+      border-radius: 15px;
+      background-color: #fff2ea;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+      width: 320px;
+    }
+
+    input {
+      margin: 8px;
+      padding: 10px;
+      width: 90%;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+
+    button.action {
+      margin-top: 10px;
+      padding: 10px 20px;
+      background-color: #f8a88d;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    #message {
+      margin-top: 15px;
+      font-weight: bold;
+      color: #d66b42;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 메뉴바 -->
+  <nav>
+    <div class="nav-left">소개팅</div>
+    <div class="nav-center">
+      <button onclick="location.href='profile.html'">마이페이지</button>
+      <button onclick="location.href='match.html'">매칭</button>
+      <button onclick="location.href='chat.html'">채팅</button>
+      <button onclick="location.href='report.html'">신고</button>
+    </div>
+    <div class="nav-right">
+      <button onclick="location.href='index.html'">로그인</button>
+    </div>
+  </nav>
+
+  <!-- 로그인/회원가입 박스 -->
+  <div class="form-box">
+    <h2>회원가입 / 로그인</h2>
+
+    <input type="text" id="username" placeholder="아이디 입력"><br>
+    <input type="password" id="password" placeholder="비밀번호 입력"><br>
+    <input type="text" id="name" placeholder="이름"><br>
+    <input type="text" id="school" placeholder="학교"><br>
+    <input type="text" id="major" placeholder="학과"><br>
+    <input type="number" id="age" placeholder="나이"><br>
+
+    <button class="action" onclick="register()">회원가입</button>
+    <button class="action" onclick="login()">로그인</button>
+
+    <p id="message"></p>
+  </div>
+
+  <script>
+    function register() {
+      const id = document.getElementById("username").value.trim();
+      const pw = document.getElementById("password").value.trim();
+      const name = document.getElementById("name").value.trim();
+      const school = document.getElementById("school").value.trim();
+      const major = document.getElementById("major").value.trim();
+      const age = document.getElementById("age").value.trim();
+
+      if (!id || !pw || !name || !school || !major || !age) {
+        showMessage("모든 정보를 입력하세요.");
+        return;
+      }
+
+      if (localStorage.getItem("user_" + id)) {
+        showMessage("이미 존재하는 아이디입니다.");
+        return;
+      }
+
+      const user = { id, password: pw, name, school, major, age };
+      localStorage.setItem("user_" + id, JSON.stringify(user));
+      showMessage("회원가입 성공!");
+    }
+
+    function login() {
+      const id = document.getElementById("username").value.trim();
+      const pw = document.getElementById("password").value.trim();
+      const stored = localStorage.getItem("user_" + id);
+
+      if (!stored) {
+        showMessage("존재하지 않는 아이디입니다.");
+        return;
+      }
+
+      const user = JSON.parse(stored);
+      if (user.password !== pw) {
+        showMessage("비밀번호가 틀렸습니다.");
+        return;
+      }
+
+      localStorage.setItem("loggedInUser", JSON.stringify(user));
+      location.href = "main.html"; // 로그인 성공 시 메인 페이지로 이동
+    }
+
+    function showMessage(msg) {
+      document.getElementById("message").textContent = msg;
+    }
+  </script>
+
+</body>
+</html>

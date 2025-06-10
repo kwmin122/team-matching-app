@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>소개팅 메인화면</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      margin: 0;
+      background-color: #fff8f3;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+
+    nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #fff2ea;
+      padding: 15px 30px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+      position: sticky;
+      top: 0;
+      z-index: 999;
+    }
+
+    .nav-left {
+      font-size: 24px;
+      font-weight: bold;
+      color: #d66b42;
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 15px;
+      justify-content: center;
+      flex-grow: 1;
+    }
+
+    .nav-center button,
+    .nav-right button {
+      background-color: #f8a88d;
+      color: white;
+      padding: 8px 14px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .nav-center button:hover,
+    .nav-right button:hover {
+      background-color: #f58c73;
+    }
+
+    .nav-right {
+      padding-right: 10px;
+    }
+
+    .wrapper {
+      display: flex;
+      padding: 40px;
+    }
+
+    .profile-box {
+      width: 250px;
+      background: #fff2ea;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.05);
+      margin-right: 40px;
+      height: fit-content;
+    }
+
+    .profile-box img {
+      width: 100%;
+      border-radius: 15px;
+      object-fit: cover;
+      margin-bottom: 15px;
+    }
+
+    .field {
+      margin: 10px 0;
+    }
+
+    .label {
+      font-weight: bold;
+      display: inline-block;
+      width: 80px;
+    }
+
+    .main-image {
+      flex-grow: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .main-image img {
+      max-width: 600px;
+      width: 100%;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 메뉴바 -->
+  <nav>
+    <div class="nav-left">소개팅</div>
+    <div class="nav-center">
+      <button onclick="location.href='profile.html'">마이페이지</button>
+      <button onclick="location.href='match.html'">매칭</button>
+      <button onclick="location.href='chat.html'">채팅</button>
+      <button onclick="location.href='report.html'">신고</button>
+    </div>
+    <div class="nav-right">
+      <button onclick="logout()">로그아웃</button>
+    </div>
+  </nav>
+
+  <!-- 콘텐츠 -->
+  <div class="wrapper">
+    <!-- 왼쪽 프로필 -->
+    <div class="profile-box" id="profileBox">
+      <!-- 자바스크립트로 사용자 정보 채워짐 -->
+    </div>
+
+    <!-- 메인 이미지 -->
+    <div class="main-image">
+      <img src="https://via.placeholder.com/600x350.png?text=소개팅+메인화면" alt="메인 이미지">
+    </div>
+  </div>
+
+  <script>
+    let currentUser = null;
+
+    window.onload = function () {
+      const userData = localStorage.getItem("loggedInUser");
+      const box = document.getElementById("profileBox");
+
+      if (!userData) {
+        alert("로그인이 필요합니다.");
+        location.href = "login.html";
+        return;
+      }
+
+      currentUser = JSON.parse(userData);
+
+      const savedImg = localStorage.getItem("profileImage_" + currentUser.id);
+      const profileImg = savedImg || "profile.jpg";
+
+      box.innerHTML = `
+        <img src="${profileImg}" alt="프로필 사진">
+        <div class="field"><span class="label">이름:</span> ${currentUser.name}</div>
+        <div class="field"><span class="label">학교:</span> ${currentUser.school}</div>
+        <div class="field"><span class="label">학과:</span> ${currentUser.major}</div>
+        <div class="field"><span class="label">나이:</span> ${currentUser.age}</div>
+      `;
+    };
+
+    function logout() {
+      localStorage.removeItem("loggedInUser");
+      location.href = "login.html";
+    }
+  </script>
+
+</body>
+</html>

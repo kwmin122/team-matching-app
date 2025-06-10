@@ -1,0 +1,108 @@
+<!---
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>대학생 소개팅 - 신고 즉시 차단 기능</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 30px;
+    }
+    nav {
+      background: #f0f0f0;
+      padding: 10px;
+      margin-bottom: 20px;
+    }
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #333;
+      font-weight: bold;
+    }
+    .user-card {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 10px;
+      width: 300px;
+      margin-bottom: 20px;
+    }
+    button {
+      margin-right: 10px;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .block-btn {
+      background-color: #f44336;
+      color: white;
+    }
+    .report-btn {
+      background-color: #ff9800;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  -- 메뉴바 --
+<nav>
+  <div class="nav-left">소개팅</div>
+  <div class="nav-center">
+    <button onclick="location.href='profile.html'">마이페이지</button>
+    <button onclick="location.href='match.html'">매칭</button>
+    <button onclick="location.href='chat.html'">채팅</button>
+    <button onclick="location.href='report.html'">신고</button>
+  </div>
+  <div class="nav-right">
+    <button onclick="location.href='login.html'">로그인</button>
+  </div>
+</nav>
+
+
+  <div class="user-card" id="user-101">
+    <h3>김학생 (ID: 101)</h3>
+    <button class="block-btn" onclick="blockUser(101)">차단</button>
+    <button class="report-btn" onclick="reportUser(101)">신고</button>
+  </div>
+
+  <div class="user-card" id="user-102">
+    <h3>이학생 (ID: 102)</h3>
+    <button class="block-btn" onclick="blockUser(102)">차단</button>
+    <button class="report-btn" onclick="reportUser(102)">신고</button>
+  </div>
+
+  <script>
+    const blockedUsers = [];
+
+    function blockUser(userId) {
+      if (!blockedUsers.includes(userId)) {
+        blockedUsers.push(userId);
+        alert(`사용자 ${userId}번을 차단했습니다.`);
+        const card = document.getElementById(`user-${userId}`);
+        if (card) card.style.opacity = "0.4"; // 흐리게 표시
+      } else {
+        alert(`이미 사용자 ${userId}번을 차단했습니다.`);
+      }
+      console.log("차단된 사용자 목록:", blockedUsers);
+    }
+
+    function reportUser(userId) {
+      const reason = prompt(`사용자 ${userId}번을 신고하는 이유를 적어주세요:`);
+      if (reason) {
+        alert(`사용자 ${userId}번이 다음 사유로 신고되었습니다:\n\"${reason}\"`);
+        console.log(`신고된 사용자 ${userId}: ${reason}`);
+
+        // 🔽 신고 시 자동 차단
+        blockUser(userId);
+      } else {
+        alert("신고가 취소되었습니다.");
+      }
+    }
+  </script>
+
+</body>
+</html>
+
+-->
